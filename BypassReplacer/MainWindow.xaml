@@ -1,0 +1,17 @@
+﻿<Window x:Class="BypassReplacer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BypassReplacer"
+        mc:Ignorable="d"
+            ResizeMode="CanMinimize"
+    WindowStartupLocation="CenterScreen"
+    Title="BypassReplacer" Height="200" Width="300">
+    <Grid Margin="10">
+        <StackPanel>
+            <TextBlock x:Name="title" Text="" Background="#FFD2D2D2" Padding="5" Margin="0 0 0 5"/>
+            <TextBlock x:Name="inform" Text="" Height="130" Background="#FFD2D2D2" Padding="5" Margin="0 5 0 5" TextWrapping="Wrap" TextTrimming="WordEllipsis"/>
+        </StackPanel>
+    </Grid>
+</Window>
