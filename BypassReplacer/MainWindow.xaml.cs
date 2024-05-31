@@ -34,6 +34,17 @@ namespace BypassReplacer
         [DllImport("kernel32.dll")] private static extern uint SuspendThread(IntPtr hThread);
 
         [DllImport("kernel32.dll")] private static extern int ResumeThread(IntPtr hThread);
+        
+        [DllImport("kernel32", CharSet = CharSet.Auto, SetLastError = true)] private static extern bool CloseHandle(IntPtr handle);
+
+        [DllImport("kernel32.dll")]
+        static extern bool CreateSymbolicLink(string lpSymlinkFileName, string lpTargetFileName, SymbolicLink dwFlags);
+        enum SymbolicLink
+        {
+            File = 0,
+            Directory = 1
+        }
+
         public MainWindow()
         {
             InitializeComponent();
@@ -45,7 +56,10 @@ namespace BypassReplacer
                 List<Process> multiProcess = new List<Process>();
                 string filePath = "";
                 string filePathMinecraft = "";
+                string replacePath = "\\Minigames\\";
+                string replaceName = "minecraft.jar";
 
+                Console.WriteLine("Запустите Cristalix...");
                 Dispatcher.Invoke(() => this.inform.Text = "Запустите Cristalix...");
 
                 while (true)
@@ -61,22 +75,23 @@ namespace BypassReplacer
 
                             if (!path.Contains("\\.cristalix\\")) continue;
 
-                            string pathSunEc = path.Replace("\\bin\\java.exe", "\\lib\\ext\\sunec.jar");
-                            if (!File.Exists(pathSunEc)) continue;
+                            string pathSunEc = path.Replace("\\23-jre-win-64\\bin\\java.exe", replacePath + replaceName);
 
+                            if (!File.Exists(pathSunEc)) continue;
                             if (currTime - new TimeSpan(p.StartTime.Ticks).TotalSeconds > 3)
                             {
                                 multiProcess.Add(p);
                                 continue;
                             }
 
+                            Console.WriteLine("Cristalix найден! ждёмс чудо...");
                             Dispatcher.Invoke(() => this.inform.Text = "Cristalix найден! ждёмс чудо...");
                             filePath = pathSunEc;
                             filePathMinecraft = path.Substring(0, path.IndexOf("\\.cristalix\\")) + "\\.cristalix\\updates\\Minigames\\minecraft.jar";
                             currProcess = p;
                         }
                         if (filePath.Length > 0) break;
-                        Thread.Sleep(100);
+                        Thread.Sleep(1);
                     }
                     catch (Exception ex)
                     {
@@ -87,12 +102,13 @@ namespace BypassReplacer
                 }
                 if (filePath.Length == 0) return;
                 string tempPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "sunec_temp");
-                string tempFile = System.IO.Path.Combine(tempPath, "sunec.jar");
+                string tempFile = System.IO.Path.Combine(tempPath, replaceName);
                 try
                 {
                     Directory.CreateDirectory(tempPath);
                     File.Copy(filePath, tempFile, overwrite: true);
 
+                    Console.WriteLine("Подмена 1...");
                     Dispatcher.Invoke(() => this.inform.Text = "Подмена 1...");
                     JavaProcess(currProcess, false);
                     if (multiProcess.Count > 0)
@@ -107,12 +123,16 @@ namespace BypassReplacer
                             JavaProcess(p, false);
                         }
                     }
-                    File.Copy("C:\\Xenoceal\\sunec.jar", filePath, overwrite: true);
+                    File.Delete(filePath);
+                    CreateSymbolicLink(filePath, "C:\\Xenoceal\\" + replaceName, SymbolicLink.File);
+                    //File.Copy("C:\\Xenoceal\\" + replaceName, filePath, overwrite: true);
                     JavaProcess(currProcess, true);
 
+                    Console.WriteLine("Ждём запуска майнкрафта...");
                     Dispatcher.Invoke(() => this.inform.Text = "Ждём запуска майнкрафта...");
                     if (multiProcess.Count > 0)
                     {
+                        Console.WriteLine("Обнаружено что запущено несколько майнкрафтов (кристаликса), они будут заморожены на момент инжекта во избежания краша");
                         Dispatcher.Invoke(() => this.inform.Text += "\n\nОбнаружено что запущено несколько майнкрафтов (кристаликса), они будут заморожены на момент инжекта во избежания краша");
                     }
                     while (true)
@@ -134,16 +154,20 @@ namespace BypassReplacer
                                 break;
                             }
                         }
-                        Thread.Sleep(100);
+                        Thread.Sleep(10);
                     }
 
+                    Console.WriteLine("Подмена 2...");
                     Dispatcher.Invoke(() => this.inform.Text = "Подмена 2...");
                     JavaProcess(currProcess, false);
                     if (multiProcess.Count > 0)
                     {
+                        Console.WriteLine("Обнаружено что запущено несколько майнкрафтов (кристаликса), они будут заморожены на момент инжекта во избежания краша");
                         Dispatcher.Invoke(() => this.inform.Text += "\n\nОбнаружено что запущено несколько майнкрафтов (кристаликса), они будут заморожены на момент инжекта во избежания краша");
                     }
+                    File.Delete(filePath);
                     File.Copy(tempFile, filePath, overwrite: true);
+                    //File.Copy(tempFile, filePath, overwrite: true);
                     JavaProcess(currProcess, true);
                     foreach (Process p in multiProcess)
                     {
@@ -153,6 +177,7 @@ namespace BypassReplacer
                             JavaProcess(p, true);
                         }
                     }
+                    Console.WriteLine("Вроде всё прошло успешно, проверяйте");
                     Dispatcher.Invoke(() => this.inform.Text = "Вроде всё прошло успешно, проверяйте");
                     Thread.Sleep(2000);
 
@@ -204,6 +229,7 @@ namespace BypassReplacer
                     {
                         if (active) ResumeThread(intPtr);
                         else SuspendThread(intPtr);
+                        CloseHandle(intPtr);
                     }
                 }
             }
