@@ -117,7 +117,7 @@ namespace BypassReplacer
                     catch (Exception ex)
                     {
                         Console.WriteLine(ex.ToString());
-                        Dispatcher.Invoke(() => inform.Text = $"Ошибка: {ex.Message}" + "\nПерезапустите BypassReplacer для повторной попытки");
+                        Dispatcher.Invoke(() => inform.Text = $"Ошибка: {ex.GetType()} {ex.Message}" + "\nПерезапустите BypassReplacer для повторной попытки");
                         break;
                     }
                 }
@@ -229,7 +229,7 @@ namespace BypassReplacer
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.ToString());
-                    Dispatcher.Invoke(() => inform.Text = $"Ошибка: {ex.Message}\nПерезапустите BypassReplacer для повторной попытки");
+                    Dispatcher.Invoke(() => inform.Text = $"Ошибка: {ex.GetType()} {ex.Message}\nПерезапустите BypassReplacer для повторной попытки");
                     try
                     {
                         foreach (Process p in multiProcess)

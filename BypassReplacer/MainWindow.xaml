@@ -11,7 +11,9 @@
     <Grid Margin="10">
         <StackPanel>
             <TextBlock x:Name="title" Text="" Background="#FFD2D2D2" Padding="5" Margin="0 0 0 5"/>
-            <TextBlock x:Name="inform" Text="" Height="130" Background="#FFD2D2D2" Padding="5" Margin="0 5 0 5" TextWrapping="Wrap" TextTrimming="WordEllipsis"/>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Width="Auto" Height="110">
+                <TextBlock x:Name="inform" Text="" MinHeight="110" Background="#FFD2D2D2" Padding="5" TextWrapping="Wrap" TextTrimming="WordEllipsis" Width="Auto"/>
+            </ScrollViewer>
         </StackPanel>
     </Grid>
 </Window>
