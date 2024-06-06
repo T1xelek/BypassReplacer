@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Management;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -53,12 +52,65 @@ namespace BypassReplacer
 
             Task.Run(() =>
             {
+
                 Process currProcess = null;
                 List<Process> multiProcess = new List<Process>();
                 string filePath = "";
                 string filePathMinecraft = "";
                 string replacePath = "\\Minigames\\";
                 string replaceName = "minecraft.jar";
+
+                // TODO Serega007 всё это не используется так как это отжирает % ЦП, на моём 20-ти ядерном Xeon 5% WMI отжирал, но на каком-нибудь 2-х ядерном Atom это наверно будет очень больно
+                /*try
+                {
+                    string queryString =
+                    "SELECT TargetInstance FROM __InstanceCreationEvent " +
+                    "WITHIN 0.5 " +
+                    "WHERE TargetInstance ISA 'Win32_Process' " +
+                    "AND TargetInstance.Name = 'java.exe' " +
+                    "AND TargetInstance.CommandLine LIKE '%ru.cristalix%'" +
+                    // TODO Serega007 сомнительная фигня с HandleCount, но это сделано так как Cristalix при закрытии майнкрафта какого-то хрена на время создаёт ещё один процесс java.exe
+                    "AND TargetInstance.HandleCount != 0";
+
+                    // create the watcher and start to listen
+                    ManagementEventWatcher watcher = new ManagementEventWatcher(queryString);
+                    watcher.Options.Timeout = new TimeSpan(0, 5, 0);
+
+                    while (true)
+                    {
+                        // Block until the next event occurs
+                        // Note: this can be done in a loop if waiting for
+                        //        more than one occurrence
+                        ManagementBaseObject e = watcher.WaitForNextEvent();
+
+                        //Всякая debug фигня
+                        //Display information from the event
+                        Console.WriteLine(
+                            "Process {0} has been created, path is: {1}",
+                            ((ManagementBaseObject)e ["TargetInstance"])["Name"],
+                            ((ManagementBaseObject)e ["TargetInstance"])["ExecutablePath"]);
+
+                        // Отображает всё что есть в TargetInstance
+                        foreach (PropertyData property in ((ManagementBaseObject)e["TargetInstance"]).Properties)
+                        {
+                            Console.WriteLine(property.Name);
+
+                            Console.WriteLine(
+                                    ((ManagementBaseObject)e["TargetInstance"]).Properties[property.Name.ToString()].Value);
+                            Console.WriteLine();
+                        }
+
+                        watcher.Stop();
+                        break;
+                    }
+
+                    //watcher.EventArrived += new EventArrivedEventHandler(this.OnEventArrived);
+                    //watcher.Start();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("An error occurred: " + ex.Message);
+                }*/
 
                 if (!File.Exists("C:\\Xenoceal\\" + replaceName))
                 {
@@ -78,23 +130,16 @@ namespace BypassReplacer
                         Process[] process = Process.GetProcessesByName("java");
                         foreach (Process p in process)
                         {
+                            // TODO Serega007 сомнительная фигня с HandleCount, но это сделано так как Cristalix при закрытии майнкрафта какого-то хрена на время создаёт ещё один процесс java.exe (который ничего не делает?)
+                            if (p.HandleCount == 0) continue;
+
                             string path = p.MainModule.FileName;
-                            string cmdLine = GetCommandLine(p);
 
-                            if (!cmdLine.Contains("ru.cristalix")) continue;
+                            // TODO лучше это смотреть в CommandLine но сделать это без WMI весьма сложно и не надёжно
+                            if (!path.Contains("23-jre-win-64\\bin")) continue;
 
-                            /*try
-                            {
-                                Process pp = GetParent(p);
-                                if (pp != null)
-                                {
-                                    if (pp.ProcessName.Contains("javaw")) continue;
-                                }
-                            }
-                            catch (Exception)
-                            {
-                                continue;
-                            }*/
+                            //string cmdLine = GetCommandLine(p);
+                            //if (!cmdLine.Contains("ru.cristalix")) continue;
 
                             string pathSunEc = path.Substring(0, path.IndexOf("\\updates\\")) + "\\updates" + replacePath + replaceName;
 
@@ -324,9 +369,11 @@ namespace BypassReplacer
             }
         }
 
+        // TODO Serega007 всё это не используется так как это отжирает % ЦП, на моём 20-ти ядерном Xeon 5% WMI отжирал, но на каком-нибудь 2-х ядерном Atom это наверно будет очень больно
+
         // Define an extension method for type System.Process that returns the command 
         // line via WMI.
-        private static string GetCommandLine(Process process)
+        /*private static string GetCommandLine(Process process)
         {
             string cmdLine = null;
             using (var searcher = new ManagementObjectSearcher(
@@ -353,7 +400,7 @@ namespace BypassReplacer
                 var dummy = process.MainModule; // Provoke exception.
             }
             return cmdLine;
-        }
+        }*/
 
         /*public static Process GetParent(Process process)
         {
